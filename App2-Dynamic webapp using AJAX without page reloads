@@ -1,0 +1,86 @@
+index.html
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Dynamic AJAX Example</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f8fb;
+      padding: 40px;
+      color: #333;
+    }
+    input {
+      padding: 10px;
+      margin: 10px 0;
+      width: 250px;
+      border: 1px solid #ccc;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    button {
+      padding: 10px 20px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      border-radius: 5px;
+      font-size: 16px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+    button:hover {
+      background-color: #45a049;
+    }
+    p {
+      margin: 10px 0;
+      font-size: 16px;
+    }
+    #changeLog {
+      margin-top: 20px;
+      padding: 10px;
+      background-color: #e7f3fe;
+      border-left: 4px solid #2196F3;
+      font-style: italic;
+    }
+  </style>
+</head>
+<body>
+  <h2>Update User Profile (AJAX Simulation)</h2>
+  
+  <input id="userName" value="John">
+  <input id="userEmail" value="john@mail.com">
+  <button onclick="updateUser()">Save</button>
+  
+  <p><strong>Name:</strong> <span id="displayName">John</span></p>
+  <p><strong>Email:</strong> <span id="displayEmail">john@mail.com</span></p>
+  <p id="changeLog"></p>
+  
+  <script>
+    let oldName = "John", oldEmail = "john@mail.com";
+
+    function updateUser() {
+      let newName = document.getElementById("userName").value;
+      let newEmail = document.getElementById("userEmail").value;
+
+      // Fake AJAX request using fetch with data URI
+      fetch("data:application/json," + 
+        JSON.stringify({ name: newName, email: newEmail }))
+        .then(response => response.json())
+        .then(updated => {
+          // Update UI
+          document.getElementById("displayName").textContent = updated.name;
+          document.getElementById("displayEmail").textContent = updated.email;
+
+          // Show change log
+          document.getElementById("changeLog").textContent = 
+            `Name: ${oldName} ➝ ${updated.name} | Email: ${oldEmail} ➝ ${updated.email}`;
+
+          // Save new values as old values
+          oldName = updated.name;
+          oldEmail = updated.email;
+        });
+    }
+  </script>
+</body>
+</html>
