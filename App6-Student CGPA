@@ -1,0 +1,100 @@
+create file : src>app>app.component.css
+app.component.html
+<h1>Student Details & CGPA</h1>
+
+<label>Enter number of students: </label>
+<input type="number" [(ngModel)]="studentCount" min="1" />
+<button (click)="generateForm()">Generate Form</button>
+
+<div *ngIf="students.length > 0">
+  <h3>Enter Student Details:</h3>
+  <div *ngFor="let student of students; let i = index">
+    <p>
+      <strong>Student {{i + 1}}:</strong><br>
+      Name: <input type="text" [(ngModel)]="student.name" placeholder="Enter Name" />
+      Register No: <input type="text" [(ngModel)]="student.regno" placeholder="Enter Reg No" />
+      CGPA: <input type="number" step="0.01" [(ngModel)]="student.cgpa" placeholder="Enter CGPA" />
+    </p>
+  </div>
+  <button (click)="showDetails()">Show Details</button>
+</div>
+
+<div *ngIf="display">
+  <h2>Student List (Total: {{students.length}})</h2>
+  <table border="1" cellpadding="5">
+    <tr>
+      <th>S.No</th>
+      <th>Name</th>
+      <th>Register No</th>
+      <th>CGPA</th>
+    </tr>
+    <tr *ngFor="let s of students; let i = index">
+      <td>{{i + 1}}</td>
+      <td>{{s.name}}</td>
+      <td>{{s.regno}}</td>
+      <td>{{s.cgpa}}</td>
+    </tr>
+  </table>
+
+  <p><b>Average CGPA:</b> {{getAverageCGPA() | number:'1.2-2'}}</p>
+</div>
+
+app.module.ts
+import { NgModule } from '@angular/core';
+import { BrowserModule } from '@angular/platform-browser';
+import { FormsModule } from '@angular/forms';   // ✅ Add this
+
+import { AppComponent } from './app.component';
+
+@NgModule({
+  declarations: [
+    AppComponent
+  ],
+  imports: [
+    BrowserModule,
+    FormsModule   // ✅ Add this
+  ],
+  providers: [],
+  bootstrap: [AppComponent]
+})
+export class AppModule { }
+
+app.component.ts
+import { Component } from '@angular/core';
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  title = 'student';
+  studentCount: number = 0;
+  students: { name: string; regno: string; cgpa: number | null }[] = [];
+  display: boolean = false;
+
+  generateForm() {
+    this.students = [];
+    for (let i = 0; i < this.studentCount; i++) {
+      this.students.push({ name: '', regno: '', cgpa: null });
+    }
+    this.display = false;
+  }
+
+  showDetails() {
+    this.display = true;
+  }
+
+  getAverageCGPA(): number {
+    if (this.students.length === 0) return 0;
+    let sum = 0, count = 0;
+    for (let s of this.students) {
+      if (s.cgpa !== null && !isNaN(s.cgpa)) {
+        sum += s.cgpa;
+        count++;
+      }
+    }
+    return count > 0 ? sum / count : 0;
+  }
+}
+
+
