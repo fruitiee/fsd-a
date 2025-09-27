@@ -1,0 +1,45 @@
+npx create-react-app
+cs proname
+npm start
+my-app/
+ └─ src/
+    ├─ App.jsx
+    ├─ App.css
+    ├─ components/
+    │   └─ MyHome.jsx
+
+App.jsx
+import { useState } from "react";
+import "./App.css";
+import MyHome from "./components/MyHome";
+
+function App() {
+  const [count, setCount] = useState(0);
+
+  return (
+    <>
+      <MyHome />
+    </>
+  );
+}
+
+export default App;
+
+components/MyHome.jsx
+import React, { useState } from "react";
+
+function MyHome() {
+  const handleClick = () => {
+    alert("You clicked the button!");
+  };
+
+  return (
+    <div>
+      <h1>My Home Component</h1>
+      <p>This is a simple home component.</p>
+      <button onClick={handleClick}>Submit</button>
+    </div>
+  );
+}
+
+export default MyHome;
