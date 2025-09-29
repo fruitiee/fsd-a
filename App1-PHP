@@ -1,0 +1,148 @@
+(Run:localhost/downloads/company/Employee.php)
+Create a folder in C>db.php>employee.php
+Open xampp:
+Apache
+MySql>start>Admin
+Database name:company_db
+Code in sql:
+CREATE DATABASE company_db;
+
+USE company_db;
+
+CREATE TABLE employees (
+  id INT AUTO_INCREMENT PRIMARY KEY,
+  name VARCHAR(100) NOT NULL,
+  email VARCHAR(100) NOT NULL UNIQUE,
+  position VARCHAR(100),
+  salary DECIMAL(10,2)
+);
+
+Open notepad:
+employee.php
+<?php
+include "db.php";
+
+// Handle Add Employee
+if (isset($_POST['add'])) {
+    $name     = $_POST['name'];
+    $email    = $_POST['email'];
+    $position = $_POST['position'];
+    $salary   = $_POST['salary'];
+
+    $sql = "INSERT INTO employees (name, email, position, salary) 
+            VALUES ('$name', '$email', '$position', '$salary')";
+    $conn->query($sql);
+    header("Location: employee.php");
+    exit;
+}
+
+// Handle Delete Employee
+if (isset($_GET['delete'])) {
+    $id = $_GET['delete'];
+    $conn->query("DELETE FROM employees WHERE id=$id");
+    header("Location: employee.php");
+    exit;
+}
+
+// Handle Update Employee
+if (isset($_POST['update'])) {
+    $id       = $_POST['id'];
+    $name     = $_POST['name'];
+    $email    = $_POST['email'];
+    $position = $_POST['position'];
+    $salary   = $_POST['salary'];
+
+    $sql = "UPDATE employees 
+            SET name='$name', email='$email', position='$position', salary='$salary'
+            WHERE id=$id";
+    $conn->query($sql);
+    header("Location: employee.php");
+    exit;
+}
+
+// Fetch all employees
+$result = $conn->query("SELECT * FROM employees");
+?>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Employee Management</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+</head>
+<body class="container mt-5">
+
+    <h2 class="mb-4">Employee Management</h2>
+
+    <!-- Add Employee Form -->
+    <div class="card mb-4">
+        <div class="card-header">Add New Employee</div>
+        <div class="card-body">
+            <form method="POST">
+                <div class="mb-2">
+                    <input type="text" name="name" placeholder="Name" class="form-control" required>
+                </div>
+                <div class="mb-2">
+                    <input type="email" name="email" placeholder="Email" class="form-control" required>
+                </div>
+                <div class="mb-2">
+                    <input type="text" name="position" placeholder="Position" class="form-control">
+                </div>
+                <div class="mb-2">
+                    <input type="number" step="0.01" name="salary" placeholder="Salary" class="form-control">
+                </div>
+                <button type="submit" name="add" class="btn btn-success">Add Employee</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Employee Table -->
+    <table class="table table-bordered">
+        <thead class="table-dark">
+            <tr>
+                <th>ID</th><th>Name</th><th>Email</th><th>Position</th><th>Salary</th><th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            <?php while ($row = $result->fetch_assoc()) { ?>
+            <tr>
+                <td><?= $row['id']; ?></td>
+                <td><?= $row['name']; ?></td>
+                <td><?= $row['email']; ?></td>
+                <td><?= $row['position']; ?></td>
+                <td><?= $row['salary']; ?></td>
+                <td>
+                    <!-- Edit Form -->
+                    <form method="POST" style="display:inline-block;">
+                        <input type="hidden" name="id" value="<?= $row['id']; ?>">
+                        <input type="text" name="name" value="<?= $row['name']; ?>" required>
+                        <input type="email" name="email" value="<?= $row['email']; ?>" required>
+                        <input type="text" name="position" value="<?= $row['position']; ?>">
+                        <input type="number" step="0.01" name="salary" value="<?= $row['salary']; ?>">
+                        <button type="submit" name="update" class="btn btn-primary btn-sm">Update</button>
+                    </form>
+                    <a href="?delete=<?= $row['id']; ?>" class="btn btn-danger btn-sm"
+                       onclick="return confirm('Delete this employee?')">Delete</a>
+                </td>
+            </tr>
+            <?php } ?>
+        </tbody>
+    </table>
+
+</body>
+</html>
+
+db.php
+<?php
+$host = "localhost";   // your MySQL host
+$user = "root";        // default user in XAMPP/WAMP
+$pass = "";            // default password (empty in XAMPP)
+$db   = "company_db";  // database name
+
+$conn = new mysqli($host, $user, $pass, $db);
+
+if ($conn->connect_error) {
+    die("Database connection failed: " . $conn->connect_error);
+}
+?>
+
