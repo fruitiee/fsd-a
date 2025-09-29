@@ -1,0 +1,274 @@
+node -v
+npm -v
+npm create vite@latest hospital
+cd hospital
+npm install react-router-dom bootstrap
+npm run dev
+Create these files:
+src/
+  main.jsx
+  RootApp.jsx
+  component/
+    AppRoutes.jsx
+    BookDoctor.jsx
+    AppointmentList.jsx
+
+src/main.jsx
+import React from "react";
+import { createRoot } from "react-dom/client";
+import { BrowserRouter } from "react-router-dom";
+import RootApp from "./RootApp";
+import "bootstrap/dist/css/bootstrap.min.css";
+
+const root = createRoot(document.getElementById("root"));
+root.render(
+  <React.StrictMode>
+    <BrowserRouter>
+      <RootApp />
+    </BrowserRouter>
+  </React.StrictMode>
+);
+
+src/RootApp.jsx
+import React from "react";
+import AppRoutes from "./component/AppRoutes";
+
+const RootApp = () => {
+  return (
+    <div>
+      <AppRoutes />
+    </div>
+  );
+};
+
+export default RootApp;
+
+src/component/AppRoutes.jsx
+import React from "react";
+import { Routes, Route, Link } from "react-router-dom";
+import BookDoctor from "./BookDoctor";
+import AppointmentList from "./AppointmentList";
+
+const AppRoutes = () => {
+  return (
+    <>
+      <nav className="navbar navbar-expand-lg navbar-dark bg-primary">
+        <div className="container">
+          <Link className="navbar-brand" to="/">DocBooking</Link>
+          <div>
+            <Link className="btn btn-light me-2" to="/">Book</Link>
+            <Link className="btn btn-light" to="/appointments">Appointments</Link>
+          </div>
+        </div>
+      </nav>
+
+      <div className="container mt-4">
+        <Routes>
+          <Route path="/" element={<BookDoctor />} />
+          <Route path="/appointments" element={<AppointmentList />} />
+          <Route path="*" element={<h3 className="text-center mt-5">404 - Page Not Found</h3>} />
+        </Routes>
+      </div>
+    </>
+  );
+};
+
+export default AppRoutes;
+
+src/component/BookDoctor.jsx
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const BookDoctor = () => {
+  const navigate = useNavigate();
+
+  const doctors = [
+    { id: 1, name: "Dr. Neha Kapoor (Cardiologist)" },
+    { id: 2, name: "Dr. Arjun Mehta (Pediatrician)" },
+    { id: 3, name: "Dr. Kavya Reddy (Orthopedic)" }
+  ];
+
+  const [form, setForm] = useState({
+    doctor: doctors[0].name,
+    patient: "",
+    date: "",
+    time: "",
+    remarks: ""
+  });
+
+  const handleChange = (e) => {
+    setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  };
+
+  const handleSubmit = (e) => {
+    e.preventDefault();
+
+    if (!form.patient.trim() || !form.date || !form.time) {
+      alert("Please fill patient name, date, and time.");
+      return;
+    }
+
+    const stored = JSON.parse(localStorage.getItem("DoctorAppointments")) || [];
+    const newAppt = { id: Date.now(), ...form };
+
+    const updated = [...stored, newAppt];
+    localStorage.setItem("DoctorAppointments", JSON.stringify(updated));
+
+    navigate("/appointments");
+  };
+
+  return (
+    <div className="card mx-auto" style={{ maxWidth: 650 }}>
+      <div className="card-body">
+        <h3 className="card-title text-center mb-4">Book Doctor Appointment</h3>
+
+        <form onSubmit={handleSubmit}>
+          <div className="mb-3">
+            <label className="form-label">Select Doctor</label>
+            <select
+              name="doctor"
+              value={form.doctor}
+              onChange={handleChange}
+              className="form-select"
+            >
+              {doctors.map(doc => (
+                <option key={doc.id} value={doc.name}>{doc.name}</option>
+              ))}
+            </select>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Patient Name</label>
+            <input
+              type="text"
+              name="patient"
+              value={form.patient}
+              onChange={handleChange}
+              className="form-control"
+              placeholder="Enter patient name"
+            />
+          </div>
+
+          <div className="row">
+            <div className="col-md-6 mb-3">
+              <label className="form-label">Date</label>
+              <input
+                type="date"
+                name="date"
+                value={form.date}
+                onChange={handleChange}
+                className="form-control"
+              />
+            </div>
+            <div className="col-md-6 mb-3">
+              <label className="form-label">Time</label>
+              <input
+                type="time"
+                name="time"
+                value={form.time}
+                onChange={handleChange}
+                className="form-control"
+              />
+            </div>
+          </div>
+
+          <div className="mb-3">
+            <label className="form-label">Remarks</label>
+            <textarea
+              name="remarks"
+              value={form.remarks}
+              onChange={handleChange}
+              className="form-control"
+              rows="3"
+              placeholder="Optional"
+            />
+          </div>
+
+          <button type="submit" className="btn btn-success w-100">Confirm Booking</button>
+        </form>
+      </div>
+    </div>
+  );
+};
+
+export default BookDoctor;
+
+src/component/AppointmentList.jsx
+import React, { useEffect, useState } from "react";
+import { useNavigate } from "react-router-dom";
+
+const AppointmentList = () => {
+  const [appointments, setAppointments] = useState([]);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    const stored = JSON.parse(localStorage.getItem("DoctorAppointments")) || [];
+    setAppointments(stored);
+  }, []);
+
+  const deleteAppointment = (id) => {
+    if (!window.confirm("Delete this appointment?")) return;
+    const updated = appointments.filter(appt => appt.id !== id);
+    setAppointments(updated);
+    localStorage.setItem("DoctorAppointments", JSON.stringify(updated));
+  };
+
+  const clearAll = () => {
+    if (appointments.length === 0) return;
+    if (!window.confirm("Clear all appointments?")) return;
+    localStorage.removeItem("DoctorAppointments");
+    setAppointments([]);
+  };
+
+  return (
+    <div>
+      <div className="d-flex justify-content-between mb-3">
+        <h2>Appointments</h2>
+        <div>
+          <button className="btn btn-primary me-2" onClick={() => navigate("/")}>New Booking</button>
+          <button className="btn btn-danger" onClick={clearAll}>Clear All</button>
+        </div>
+      </div>
+
+      {appointments.length === 0 ? (
+        <div className="alert alert-info">No appointments found.</div>
+      ) : (
+        <table className="table table-bordered">
+          <thead className="table-dark">
+            <tr>
+              <th>#</th>
+              <th>Doctor</th>
+              <th>Patient</th>
+              <th>Date</th>
+              <th>Time</th>
+              <th>Remarks</th>
+              <th>Action</th>
+            </tr>
+          </thead>
+          <tbody>
+            {appointments.map((appt, i) => (
+              <tr key={appt.id}>
+                <td>{i + 1}</td>
+                <td>{appt.doctor}</td>
+                <td>{appt.patient}</td>
+                <td>{appt.date}</td>
+                <td>{appt.time}</td>
+                <td>{appt.remarks || "-"}</td>
+                <td>
+                  <button
+                    className="btn btn-sm btn-danger"
+                    onClick={() => deleteAppointment(appt.id)}
+                  >
+                    Delete
+                  </button>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      )}
+    </div>
+  );
+};
+
+export default AppointmentList;
