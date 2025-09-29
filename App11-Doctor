@@ -1,3 +1,4 @@
+create folder>open cmd:
 node -v
 npm -v
 npm create vite@latest hospital
